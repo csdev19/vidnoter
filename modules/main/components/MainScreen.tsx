@@ -1,4 +1,5 @@
 import React, { ChangeEvent, FormEvent, useRef, useState } from 'react';
+import { isCompositeComponentWithType } from 'react-dom/test-utils';
 import ReactPlayer from 'react-player';
 
 const MainScreen = () => {
@@ -13,21 +14,35 @@ const MainScreen = () => {
     console.log('player.getCurrentTime()', player.getCurrentTime());
   };
 
-  const editableRef = useRef<HTMLDivElement>(null);
+  // const editableRef = useRef<HTMLDivElement>(null);
+  const editableRefs = useRef<Array<HTMLDivElement>>([]);
+
+  const addItemToArray = (array, item, position) => {
+    const newArray = [...array];
+    newArray.splice(position, 0, item);
+    return [...newArray];
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLElement>, id) => {
     console.log('ekey pres', e);
     if (e.key === 'Enter' && e.shiftKey === false) {
-      console.log('enter');
-      // setText({ ...text, state: inputSate.text });
+      const row = rows.find((row) => row.id === id);
 
-      setRows([
-        ...rows.map((row) => ({ ...row })),
-        { value: '', id: rows.length + 1 },
-      ]);
+      const indexRow = rows.indexOf(row);
+
+      const newRows = addItemToArray(
+        rows,
+        { value: '', id: indexRow + 1 },
+        indexRow,
+      );
+      setRows([...newRows.map((row, idx) => ({ ...row, id: idx }))]);
 
       setTimeout(() => {
-        editableRef?.current?.focus();
+        // (editableRefs).forEach((editable, idx) => {
+        //   editable?.current?.focus();
+        // }
+        console.log('editableRefs', editableRefs);
+        editableRefs?.current[indexRow + 1]?.focus();
       }, 10);
     } else if (e.code === 'Backspace') {
       setRows((prevRows) => {
@@ -40,7 +55,7 @@ const MainScreen = () => {
         ];
       });
       setTimeout(() => {
-        editableRef?.current?.focus();
+        editableRefs[id]?.current?.focus();
       }, 100);
     } else {
       setRows(
@@ -83,7 +98,7 @@ const MainScreen = () => {
           />
         </div>
         <div>
-          <div className="w-full">
+          <div className="w-full p-4">
             {rows.map((row, idx) => (
               <div key={row.id} className="w-full">
                 <div
@@ -93,7 +108,7 @@ const MainScreen = () => {
                   // onChange={(e) => handleInputChange(e, row.id)}
                   onKeyDown={(e) => handleKeyPress(e, row.id)}
                   suppressContentEditableWarning={true}
-                  ref={rows.length - 1 === idx ? editableRef : null}
+                  ref={(element) => (editableRefs.current[idx] = element)}
                   placeholder="Enter text"
                   data-ph="My Placeholder String"
                 ></div>
