@@ -1,12 +1,5 @@
-import React, { ChangeEvent, useRef, useState } from 'react';
+import React, { ChangeEvent, FormEvent, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
-
-type InputStates = 'text' | 'input';
-
-const inputSate = {
-  text: 'text',
-  input: 'input',
-};
 
 const MainScreen = () => {
   const [player, setPlayer] = useState<any>();
@@ -20,46 +13,47 @@ const MainScreen = () => {
     console.log('player.getCurrentTime()', player.getCurrentTime());
   };
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const editableRef = useRef<HTMLDivElement>(null);
 
-  const handleTransform = (id) => {
-    setText({
-      ...text,
-      state: inputSate.input,
-    });
-
-    setRows([
-      ...rows.map((row) => ({
-        ...row,
-        state: row.id === id ? inputSate.input : inputSate.text,
-      })),
-    ]);
-
-    setTimeout(() => {
-      inputRef?.current?.focus();
-    }, 100);
-  };
-
-  const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>, id) => {
-    setRows(
-      rows.map((row) => {
-        return row.id === id ? { ...row, value: e.target.value } : { ...row };
-      }),
-    );
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    console.log('e', e);
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLElement>, id) => {
+    console.log('ekey pres', e);
     if (e.key === 'Enter' && e.shiftKey === false) {
       console.log('enter');
       // setText({ ...text, state: inputSate.text });
 
       setRows([
-        ...rows.map((row) => ({ ...row, state: inputSate.text })),
-        { value: '', id: rows.length + 1, state: inputSate.input },
+        ...rows.map((row) => ({ ...row })),
+        { value: '', id: rows.length + 1 },
       ]);
+
+      setTimeout(() => {
+        editableRef?.current?.focus();
+      }, 10);
+    } else if (e.code === 'Backspace') {
+      setRows((prevRows) => {
+        return [
+          ...rows.filter((row) => {
+            return row.id == id
+              ? (e.target as HTMLElement).innerText !== ''
+              : true; // & prevRows[idx] ? row.value !== '' : true;
+          }),
+        ];
+      });
+      setTimeout(() => {
+        editableRef?.current?.focus();
+      }, 100);
+    } else {
+      setRows(
+        rows.map((row) => {
+          return row.id === id
+            ? { ...row, value: (e.target as HTMLElement).innerText }
+            : { ...row };
+        }),
+      );
+
+      // editableRef?.current?.focus();
       // setTimeout(() => {
-      //   inputRef?.current?.focus();
+      //   editableRef?.current?.focus();
       // }, 100);
     }
   };
@@ -68,14 +62,8 @@ const MainScreen = () => {
     {
       id: 0,
       value: '',
-      state: inputSate.input,
     },
   ]);
-
-  const [text, setText] = useState({
-    data: 'hi',
-    state: inputSate.text,
-  });
 
   return (
     <div className="container">
@@ -98,24 +86,17 @@ const MainScreen = () => {
           <div className="w-full">
             {rows.map((row, idx) => (
               <div key={row.id} className="w-full">
-                {row.state === inputSate.text ? (
-                  <div
-                    onClick={() => handleTransform(row.id)}
-                    className="whitespace-pre-wrap break-words"
-                  >
-                    {row.value || 'Empieza a escribir'}
-                  </div>
-                ) : (
-                  <textarea
-                    className="w-full"
-                    name="text"
-                    autoFocus
-                    id={'input-' + row.id}
-                    value={`${row.value}`}
-                    onChange={(e) => handleInputChange(e, row.id)}
-                    onKeyPress={handleKeyPress}
-                  />
-                )}
+                <div
+                  className="w-full whitespace-pre-wrap break-words"
+                  contentEditable="true"
+                  id={'input-' + row.id}
+                  // onChange={(e) => handleInputChange(e, row.id)}
+                  onKeyDown={(e) => handleKeyPress(e, row.id)}
+                  suppressContentEditableWarning={true}
+                  ref={rows.length - 1 === idx ? editableRef : null}
+                  placeholder="Enter text"
+                  data-ph="My Placeholder String"
+                ></div>
               </div>
             ))}
           </div>
