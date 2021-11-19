@@ -14,3 +14,7 @@ a {
 * {
   box-sizing: border-box;
 }
+
+[contentEditable=true]:empty:not(:focus):before{
+  content:attr(data-ph)
+}
