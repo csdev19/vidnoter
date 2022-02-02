@@ -3,7 +3,9 @@ import MainScreen from './components/MainScreen';
 
 const MainLayout: VoidFunctionComponent = () => {
   return (
-    <div>
+    <div className="container">
+      <h1 className="text-center">VidNoter</h1>
+
       <MainScreen />
     </div>
   );

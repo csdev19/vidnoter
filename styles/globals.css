@@ -18,3 +18,11 @@ a {
 [contentEditable=true]:empty:not(:focus):before{
   content:attr(data-ph)
 }
+
+[contenteditable="true"]:active,
+[contenteditable="true"]:focus{
+  border:none;
+  outline:none;
+  background-color: #2F334D;
+  color: white;
+}
